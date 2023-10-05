@@ -1,32 +1,47 @@
+import { type } from 'os';
 import {
     method,
     prop,
     SmartContract,
     hash256,
     assert,
-    SigHash
+    SigHash,
+    toByteString,
+    fill
 } from 'scrypt-ts'
 
-import type {ByteString} from 'scrypt-ts';
+import type { ByteString, FixedArray } from 'scrypt-ts';
+
+export type Name = ByteString
+
+export type Candidate = {
+    name: Name,
+    votesRecieved: bigint
+}
+
+export const N = 2
+
 
 export class Voting extends SmartContract {
     @prop(true)
-    count: bigint
+    candidates: FixedArray<Candidate, typeof N>
 
-    constructor(count: bigint) {
-        super(count)
-        this.count = count
+    constructor(names: FixedArray<Name, typeof N>) {
+        super(...arguments)
+        this.candidates = fill({
+            name: toByteString(''),
+            votesRecieved: 0n
+        }, N)
+        for (let i = 0; i < N; i++) {
+            this.candidates[i] = {
+                name: names[i],
+                votesRecieved: 0n
+            }
+        }
     }
 
-    @method(SigHash.SINGLE)
-    public increment() {
-        this.count++
+    @method()
+    public vote() {
 
-        // make sure balance in the contract does not change
-        const amount: bigint = this.ctx.utxo.value
-        // output containing the latest state
-        const output: ByteString = this.buildStateOutput(amount)
-        // verify current tx has this single output
-        assert(this.ctx.hashOutputs === hash256(output), 'hashOutputs mismatch')
     }
 }
