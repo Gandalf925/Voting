@@ -1,11 +1,9 @@
-import { type } from 'os';
 import {
     method,
     prop,
     SmartContract,
     hash256,
     assert,
-    SigHash,
     toByteString,
     fill
 } from 'scrypt-ts'
@@ -41,7 +39,18 @@ export class Voting extends SmartContract {
     }
 
     @method()
-    public vote() {
+    public vote(name: Name) {
+        for(let i = 0; i < N; i++) {
+            if (this.candidates[i].name === name) {
+                this.candidates[i].votesRecieved += 1n
+            }
+        }
 
+        let outputs = this.buildStateOutput(this.ctx.utxo.value)
+        if(this.changeAmount > 0n){
+            outputs += this.buildChangeOutput()
+        }
+
+        assert(this.ctx.hashOutputs === hash256(outputs), 'invalid outputs')
     }
 }
