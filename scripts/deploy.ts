@@ -1,7 +1,7 @@
 import { writeFileSync } from 'fs'
 import { Name, N, Voting } from '../src/contracts/voting'
 import { privateKey } from './privateKey'
-import { bsv, TestWallet, DefaultProvider, sha256, FixedArray, toByteString } from 'scrypt-ts'
+import { bsv, TestWallet, DefaultProvider, sha256, FixedArray, toByteString, hash256 } from 'scrypt-ts'
 
 function getScriptHash(scriptPubKeyHex: string) {
     const res = sha256(scriptPubKeyHex).match(/.{2}/g)
@@ -21,10 +21,10 @@ async function main() {
     }))
 
     // TODO: Adjust the amount of satoshis locked in the smart contract:
-    const amount = 1
+    const amount = 12
     const names: FixedArray<Name, 2> = [
         toByteString("Android", true),
-        toByteString("IPhone",true)
+        toByteString("IPhone", true)
     ]
 
     const instance = new Voting(
@@ -36,6 +36,7 @@ async function main() {
 
     // Contract deployment.
     const deployTx = await instance.deploy(amount)
+
 
     // Save deployed contracts script hash.
     const scriptHash = getScriptHash(instance.lockingScript.toHex())
